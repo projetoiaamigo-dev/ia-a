@@ -16,21 +16,21 @@ const CHANNEL_CATALOG = Object.freeze([
   Object.freeze({
     id: "codigo-da-biblia",
     name: "Código da Bíblia",
-    status: "planned",
+    status: "configuration_pending",
     monetization: "pending",
     logo: "./icons/channels/codigo-da-biblia.webp"
   }),
   Object.freeze({
     id: "eu-oro-por-voce",
     name: "Eu Oro por Você",
-    status: "planned",
+    status: "configuration_pending",
     monetization: "pending",
     logo: "./icons/channels/eu-oro-por-voce.webp"
   }),
   Object.freeze({
     id: "palavra-que-desperta",
     name: "Palavra que Desperta",
-    status: "planned",
+    status: "configuration_pending",
     monetization: "pending",
     logo: "./icons/channels/palavra-que-desperta.webp"
   })
@@ -42,9 +42,12 @@ export const PILOT_CHANNELS = Object.freeze(
   CHANNEL_CATALOG.filter((channel) => channel.status === "active")
 );
 
-export const PLANNED_CHANNELS = Object.freeze(
-  CHANNEL_CATALOG.filter((channel) => channel.status === "planned")
+export const CONFIGURATION_PENDING_CHANNELS = Object.freeze(
+  CHANNEL_CATALOG.filter((channel) => channel.status === "configuration_pending")
 );
+
+// Alias preservado para versões anteriores do núcleo.
+export const PLANNED_CHANNELS = CONFIGURATION_PENDING_CHANNELS;
 
 export function findPilotChannel(channelId) {
   return PILOT_CHANNELS.find((channel) => channel.id === channelId) ?? null;
