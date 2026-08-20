@@ -5,7 +5,7 @@ import {
   listChannelBrainVersions,
   listChannelBrains
 } from "./brains.js";
-import { PILOT_CHANNELS } from "./channels.js";
+import { PROJECT_CHANNELS } from "./channels.js";
 import { REFERENCE_CLASSIFICATIONS } from "./brain-references.js";
 
 export class BrainCoreValidationError extends Error {
@@ -19,10 +19,37 @@ function addIssue(issues, code, channelId = null, brainId = null) {
   issues.push(Object.freeze({ code, channelId, brainId }));
 }
 
+function isVerifiedResearchStatus(status) {
+  return status === "verified" || status === "owner_verified";
+}
+
+function isValidReferenceSource(source) {
+  if (!source || !Array.isArray(source.facts) || source.facts.length === 0) return false;
+
+  if (source.type === REFERENCE_CLASSIFICATIONS.ownerSpecification) {
+    return (
+      typeof source.providedBy === "string" &&
+      source.providedBy.trim().length > 0 &&
+      source.facts.every(
+        (fact) =>
+          fact.classification === REFERENCE_CLASSIFICATIONS.ownerDefinedFact
+      )
+    );
+  }
+
+  return (
+    typeof source.url === "string" &&
+    source.url.startsWith("https://") &&
+    source.facts.every(
+      (fact) => fact.classification === REFERENCE_CLASSIFICATIONS.verifiedFact
+    )
+  );
+}
+
 function validateCurrentProfile(profile, issues) {
   const sourceIds = new Set(profile.referenceSources.map((source) => source.id));
 
-  if (profile.referenceResearch.status !== "verified") {
+  if (!isVerifiedResearchStatus(profile.referenceResearch.status)) {
     addIssue(issues, "brain_references_not_verified", profile.channel.id, profile.id);
   }
   if (profile.referenceCriteria.length === 0) {
@@ -34,25 +61,16 @@ function validateCurrentProfile(profile, issues) {
   if (
     profile.referenceCriteria.some(
       (criterion) =>
-        criterion.classification !==
-          REFERENCE_CLASSIFICATIONS.reconstructionCriterion ||
+        ![
+          REFERENCE_CLASSIFICATIONS.reconstructionCriterion,
+          REFERENCE_CLASSIFICATIONS.ownerSpecification
+        ].includes(criterion.classification) ||
         criterion.sourceIds.some((sourceId) => !sourceIds.has(sourceId))
     )
   ) {
     addIssue(issues, "brain_criteria_invalid", profile.channel.id, profile.id);
   }
-  if (
-    profile.referenceSources.some(
-      (source) =>
-        typeof source.url !== "string" ||
-        !source.url.startsWith("https://") ||
-        source.facts.length === 0 ||
-        source.facts.some(
-          (fact) =>
-            fact.classification !== REFERENCE_CLASSIFICATIONS.verifiedFact
-        )
-    )
-  ) {
+  if (profile.referenceSources.some((source) => !isValidReferenceSource(source))) {
     addIssue(issues, "brain_sources_invalid", profile.channel.id, profile.id);
   }
   if (
@@ -71,7 +89,7 @@ export function validateBrainCoreCatalog() {
   const issues = [];
   const currentProfiles = listChannelBrains();
 
-  for (const channel of PILOT_CHANNELS) {
+  for (const channel of PROJECT_CHANNELS) {
     const versions = listChannelBrainVersions(channel.id);
     const versionNumbers = versions.map((profile) => profile.profileVersion);
     const expectedVersions = versionNumbers.map((_, index) => index + 1);
@@ -99,13 +117,13 @@ export function validateBrainCoreCatalog() {
 
   if (
     new Set(currentProfiles.map((profile) => profile.channel.id)).size !==
-    PILOT_CHANNELS.length
+    PROJECT_CHANNELS.length
   ) {
     addIssue(issues, "current_brain_channel_coverage_invalid");
   }
 
   const counts = Object.freeze({
-    channels: PILOT_CHANNELS.length,
+    channels: PROJECT_CHANNELS.length,
     profiles: BRAIN_PROFILE_HISTORY.length,
     currentProfiles: currentProfiles.length,
     criteria: currentProfiles.reduce(
@@ -145,9 +163,9 @@ export function createBrainStrategyContext({ assignment, channelId }) {
   }
 
   const profile = findChannelBrain(assignment.id, assignment.profileVersion);
-  if (!profile || profile.referenceResearch.status !== "verified") {
+  if (!profile || !isVerifiedResearchStatus(profile.referenceResearch.status)) {
     throw new BrainCoreValidationError(
-      "A missão precisa de uma versão de cérebro com referências verificadas."
+      "A missão precisa de uma versão oficial ou de referências verificadas do cérebro."
     );
   }
 
