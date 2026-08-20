@@ -5,16 +5,59 @@ const listNode = document.querySelector("#field-oauth-list");
 
 const YOUTUBE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
 const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5ii3orlibet892c.apps.googleusercontent.com";
-const CONNECTIONS_KEY = "iaa.google.youtube.channel-connections.v2";
-const LEGACY_CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
-const INCORRECT_SHARED_KEY = "iaa.google.youtube.official-connection.v2";
+const CONNECTIONS_KEY = "iaa.google.youtube.channel-connections.v3";
 const PROJECT_NAME = "IA A";
+
+function normalizeHandle(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^https?:\/\/(?:www\.)?youtube\.com\/@/i, "")
+    .replace(/^@/, "")
+    .split(/[/?#]/)[0]
+    .toLowerCase();
+}
+
 const PROJECT_CHANNELS = Object.freeze([
-  Object.freeze({ id: "web-radio-louvar", name: "Web Rádio Louvar", status: "active", logo: "./icons/channels/web-radio-louvar.webp" }),
-  Object.freeze({ id: "fale-com-deus", name: "Fale com Deus", status: "active", logo: "./icons/channels/fale-com-deus.webp" }),
-  Object.freeze({ id: "eu-oro-por-voce", name: "Eu Oro por Você", status: "configuration_pending", logo: "./icons/channels/eu-oro-por-voce.webp" }),
-  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "configuration_pending", logo: "./icons/channels/codigo-da-biblia.webp" }),
-  Object.freeze({ id: "palavra-que-desperta", name: "Palavra que Desperta", status: "configuration_pending", logo: "./icons/channels/palavra-que-desperta.webp" })
+  Object.freeze({
+    id: "web-radio-louvar",
+    name: "Web Rádio Louvar",
+    status: "active",
+    logo: "./icons/channels/web-radio-louvar.webp",
+    expectedHandle: "webradiolouvar",
+    officialUrl: "https://www.youtube.com/@webradiolouvar"
+  }),
+  Object.freeze({
+    id: "fale-com-deus",
+    name: "Fale com Deus",
+    status: "active",
+    logo: "./icons/channels/fale-com-deus.webp",
+    expectedHandle: "falecomdeus2",
+    officialUrl: "https://www.youtube.com/@falecomdeus2"
+  }),
+  Object.freeze({
+    id: "eu-oro-por-voce",
+    name: "Eu Oro por Você",
+    status: "configuration_pending",
+    logo: "./icons/channels/eu-oro-por-voce.webp",
+    expectedHandle: "euoroporvoceoficial",
+    officialUrl: "https://www.youtube.com/@euoroporvoceoficial"
+  }),
+  Object.freeze({
+    id: "codigo-da-biblia",
+    name: "Código da Bíblia",
+    status: "configuration_pending",
+    logo: "./icons/channels/codigo-da-biblia.webp",
+    expectedHandle: "codigodabiblia-g9u",
+    officialUrl: "https://www.youtube.com/@CodigodaBiblia-g9u"
+  }),
+  Object.freeze({
+    id: "palavra-que-desperta",
+    name: "Palavra que Desperta",
+    status: "configuration_pending",
+    logo: "./icons/channels/palavra-que-desperta.webp",
+    expectedHandle: "palavraquedesperta-t5v",
+    officialUrl: "https://www.youtube.com/@PalavraqueDesperta-t5v"
+  })
 ]);
 
 let pendingProjectChannelId = null;
@@ -52,6 +95,7 @@ function normalizeChannel(value) {
   return {
     id,
     title: String(value.title || "Canal sem título"),
+    handle: normalizeHandle(value.handle || value.customUrl),
     url: canonicalYouTubeUrl(id)
   };
 }
@@ -91,29 +135,8 @@ function normalizeConnection(value, migrationSource = null) {
   };
 }
 
-function migrateConnections() {
-  const migrated = {};
-  const legacy = readStoredJson(LEGACY_CONNECTIONS_KEY);
-  for (const projectChannel of PROJECT_CHANNELS) {
-    const normalized = normalizeConnection(legacy?.[projectChannel.id], "legacy_distinct_connection");
-    if (normalized) migrated[projectChannel.id] = normalized;
-  }
-
-  // A versão compartilhada equivocada veio da associação já feita no card
-  // Fale com Deus. Ela só é usada se a conexão distinta antiga não existir.
-  if (!migrated["fale-com-deus"]) {
-    const shared = normalizeConnection(readStoredJson(INCORRECT_SHARED_KEY), "shared_correction_to_fale_com_deus");
-    if (shared) {
-      shared.confirmed = false;
-      migrated["fale-com-deus"] = shared;
-    }
-  }
-  saveConnections(migrated);
-  return migrated;
-}
-
 function loadConnections() {
-  return readStoredJson(CONNECTIONS_KEY) || migrateConnections();
+  return readStoredJson(CONNECTIONS_KEY) || {};
 }
 
 function updateConnection(projectChannelId, connection) {
@@ -138,7 +161,13 @@ async function fetchMyChannels(accessToken) {
   }
   const unique = new Map();
   (data?.items || [])
-    .map((channel) => normalizeChannel({ id: channel.id, title: channel.snippet?.title }))
+    .map((channel) =>
+      normalizeChannel({
+        id: channel.id,
+        title: channel.snippet?.title,
+        customUrl: channel.snippet?.customUrl
+      })
+    )
     .filter(Boolean)
     .forEach((channel) => unique.set(channel.id, channel));
   const channels = [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "pt-BR"));
@@ -163,7 +192,9 @@ function ensureTokenClient() {
       }
       try {
         const channels = await fetchMyChannels(response.access_token || "");
-        const selectedChannel = channels.length === 1 ? channels[0] : null;
+        const projectChannel = PROJECT_CHANNELS.find((channel) => channel.id === projectChannelId);
+        const selectedChannel =
+          channels.find((channel) => channel.handle === projectChannel?.expectedHandle) || null;
         updateConnection(projectChannelId, {
           connected: true,
           confirmed: false,
@@ -175,10 +206,11 @@ function ensureTokenClient() {
           migrationSource: null,
           connectedAt: new Date().toISOString()
         });
-        const projectChannel = PROJECT_CHANNELS.find((channel) => channel.id === projectChannelId);
         setMessage(
-          `${channels.length} ${channels.length === 1 ? "canal encontrado" : "canais encontrados"} para ${projectChannel?.name || "o canal"}. Confirme a identidade e o link.`,
-          "success"
+          selectedChannel
+            ? `${projectChannel?.name}: canal oficial encontrado. ID ${selectedChannel.id}.`
+            : `Nenhum canal desta conta corresponde ao link oficial de ${projectChannel?.name || "este canal"}.`,
+          selectedChannel ? "success" : "error"
         );
         render();
       } catch (error) {
@@ -226,8 +258,16 @@ function confirmChannel(projectChannelId) {
   const connections = loadConnections();
   const connection = connections[projectChannelId];
   const selected = getSelectedChannel(connection);
+  const projectChannel = PROJECT_CHANNELS.find((channel) => channel.id === projectChannelId);
   if (!connection?.connected || !selected) {
     setMessage("Escolha o canal do YouTube antes de confirmar.", "error");
+    return;
+  }
+  if (selected.handle !== projectChannel?.expectedHandle) {
+    setMessage(
+      `O canal conectado não corresponde ao link oficial de ${projectChannel?.name || "este canal"}.`,
+      "error"
+    );
     return;
   }
   const duplicate = Object.entries(connections).find(
@@ -248,8 +288,7 @@ function confirmChannel(projectChannelId) {
   connection.actualChannel = selected;
   connection.selectedChannelId = selected.id;
   updateConnection(projectChannelId, connection);
-  const projectChannel = PROJECT_CHANNELS.find((channel) => channel.id === projectChannelId);
-  setMessage(`${projectChannel?.name}: canal e link do YouTube confirmados.`, "success");
+  setMessage(`${projectChannel?.name}: canal, link e ID do YouTube confirmados.`, "success");
   render();
 }
 
@@ -257,29 +296,6 @@ function disconnect(projectChannelId) {
   updateConnection(projectChannelId, null);
   setMessage("Associação removida somente deste canal.", "success");
   render();
-}
-
-function renderClientIdSetup() {
-  const wrap = document.createElement("div");
-  wrap.className = "oauth-channel-card";
-  const title = document.createElement("h3");
-  title.textContent = "Configuração do Chrome";
-  const copy = document.createElement("p");
-  copy.textContent = "Client ID público do Google já configurado. Client Secret não é usado.";
-  const input = document.createElement("input");
-  input.type = "text";
-  input.inputMode = "text";
-  input.autocomplete = "off";
-  input.value = getClientId();
-  input.readOnly = true;
-  input.setAttribute("aria-label", "Google OAuth Client ID");
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "secondary";
-  button.textContent = "Client ID configurado";
-  button.disabled = true;
-  wrap.append(title, copy, input, button);
-  return wrap;
 }
 
 function renderChannelCard(projectChannel, connection) {
@@ -310,6 +326,17 @@ function renderChannelCard(projectChannel, connection) {
   safety.className = "oauth-safety";
   safety.textContent = "Conexão e link exclusivos deste canal. Somente leitura; publicação desativada.";
   card.append(header, copy, safety);
+
+  const officialLabel = document.createElement("p");
+  officialLabel.className = "oauth-official-label";
+  officialLabel.textContent = "Link oficial cadastrado:";
+  const officialLink = document.createElement("a");
+  officialLink.className = "oauth-youtube-link";
+  officialLink.href = projectChannel.officialUrl;
+  officialLink.target = "_blank";
+  officialLink.rel = "noopener noreferrer";
+  officialLink.textContent = projectChannel.officialUrl;
+  card.append(officialLabel, officialLink);
 
   if (!connection?.connected) {
     const button = document.createElement("button");
@@ -342,7 +369,7 @@ function renderChannelCard(projectChannel, connection) {
     channels.forEach((channel) => {
       const option = document.createElement("option");
       option.value = channel.id;
-      option.textContent = channel.title;
+      option.textContent = `${channel.title}${channel.handle ? ` · @${channel.handle}` : ""}`;
       select.append(option);
     });
     select.value = selected?.id || "";
@@ -352,13 +379,16 @@ function renderChannelCard(projectChannel, connection) {
   }
 
   if (selected) {
+    const idCopy = document.createElement("p");
+    idCopy.className = "oauth-channel-id";
+    idCopy.textContent = `ID identificado: ${selected.id}`;
     const link = document.createElement("a");
     link.className = "oauth-youtube-link";
     link.href = selected.url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.textContent = selected.url;
-    card.append(link);
+    link.textContent = `Abrir pelo ID: ${selected.url}`;
+    card.append(idCopy, link);
   }
 
   if (!connection.confirmed) {
@@ -394,7 +424,6 @@ function render() {
   const connections = loadConnections();
   redirectNode.textContent = `Chrome HTTPS: ${location.origin} · origem autorizada no Google.`;
   listNode.replaceChildren(
-    renderClientIdSetup(),
     ...PROJECT_CHANNELS.map((channel) => renderChannelCard(channel, connections[channel.id]))
   );
   if (!statusNode.textContent) {
