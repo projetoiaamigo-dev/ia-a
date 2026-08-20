@@ -14,18 +14,18 @@ const CHANNEL_CATALOG = Object.freeze([
     logo: "./icons/channels/fale-com-deus.webp"
   }),
   Object.freeze({
-    id: "codigo-da-biblia",
-    name: "Código da Bíblia",
-    status: "configuration_pending",
-    monetization: "pending",
-    logo: "./icons/channels/codigo-da-biblia.webp"
-  }),
-  Object.freeze({
     id: "eu-oro-por-voce",
     name: "Eu Oro por Você",
     status: "configuration_pending",
     monetization: "pending",
     logo: "./icons/channels/eu-oro-por-voce.webp"
+  }),
+  Object.freeze({
+    id: "codigo-da-biblia",
+    name: "Código da Bíblia",
+    status: "configuration_pending",
+    monetization: "pending",
+    logo: "./icons/channels/codigo-da-biblia.webp"
   }),
   Object.freeze({
     id: "palavra-que-desperta",
