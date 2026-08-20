@@ -5,7 +5,7 @@ const listNode = document.querySelector("#field-oauth-list");
 
 const YOUTUBE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
 const CLIENT_ID_KEY = "iaa.google.oauth.client_id";
-const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5ii3orlibet892c.apps.googleusercontent.com";
+const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5il3orlibet892c.apps.googleusercontent.com";
 const CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
 
 const slots = [
