@@ -8,7 +8,7 @@
     <title>IA A — Missões</title>
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./icons/ia-a.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css?v=9">
+    <link rel="stylesheet" href="./styles.css?v=10">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Ir para o conteúdo principal</a>
@@ -55,7 +55,7 @@
             <option value="">Carregando projetos…</option>
           </select>
 
-          <label for="channel">Canal piloto</label>
+          <label for="channel">Canal do PROJETO IA A</label>
           <select id="channel" name="channelId" required>
             <option value="">Carregando canais…</option>
           </select>
@@ -69,7 +69,8 @@
       <section id="field-connection" class="core-validation-panel field-oauth-panel" aria-labelledby="field-oauth-title">
         <div>
           <p class="kicker">CONEXÃO DE CAMPO</p>
-          <h2 id="field-oauth-title">Google / YouTube — canais piloto</h2>
+          <h2 id="field-oauth-title">Google / YouTube — canal oficial</h2>
+          <p class="oauth-project-summary"><strong>PROJETO IA A</strong>: uma única conexão com o canal oficial <strong>PROJETO IA</strong> atende os cinco canais do projeto.</p>
           <p id="field-oauth-status" class="form-status" role="status" aria-live="polite"></p>
           <p id="field-oauth-redirect" class="oauth-redirect"></p>
           <p class="oauth-safety">OAuth executado no Chrome com Google Identity Services e escopo somente leitura. Client Secret não é usado no navegador.</p>
@@ -104,9 +105,9 @@
 
       <footer>Anderson comanda. O A lidera. A IA executa.</footer>
     </main>
-    <script type="module" src="./browser-runtime.js?v=9"></script>
+    <script type="module" src="./browser-runtime.js?v=10"></script>
     <script type="module" src="./app.js?v=11"></script>
     <script src="https://accounts.google.com/gsi/client" async></script>
-    <script type="module" src="./field-oauth.js?v=12-multichannel"></script>
+    <script type="module" src="./field-oauth.js?v=13-shared-official"></script>
   </body>
 </html>
