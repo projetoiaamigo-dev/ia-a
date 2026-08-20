@@ -527,3 +527,30 @@ footer {
 .oauth-project-channel-item small {
   color: #aebdca;
 }
+
+
+.oauth-channel-heading {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+.oauth-channel-heading img {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.oauth-channel-heading h3 {
+  margin: 0;
+}
+.oauth-channel-heading small {
+  color: #aebdca;
+}
+.oauth-youtube-link {
+  display: block;
+  margin: 0.75rem 0;
+  color: #e8c777;
+  overflow-wrap: anywhere;
+}
