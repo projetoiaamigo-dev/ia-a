@@ -8,7 +8,7 @@
     <title>IA A — Missões</title>
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./icons/ia-a.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css?v=12-compact-mobile">
+    <link rel="stylesheet" href="./styles.css?v=13-folder-dashboard">
   </head>
   <body>
     <a class="skip-link" href="#main-content">Ir para o conteúdo principal</a>
@@ -32,75 +32,100 @@
         </div>
       </section>
 
-      <section class="core-validation-panel" aria-labelledby="core-validation-title">
-        <div>
-          <p class="kicker">VALIDAÇÃO INTEGRADA</p>
-          <h2 id="core-validation-title">Núcleo de projetos e missões</h2>
-          <p id="core-validation-status" role="status" aria-live="polite">Aguardando a validação local…</p>
-        </div>
-        <button id="validate-core" class="secondary" type="button">Validar núcleo</button>
-      </section>
-
-      <section class="hero" aria-labelledby="mission-title">
-        <p class="kicker">PRIMEIRA FUNÇÃO REAL</p>
-        <h2 id="mission-title">Criar uma missão</h2>
-        <p>Digite o título, escolha o projeto correto e preserve a missão localmente.</p>
-
-        <form id="mission-form">
-          <label for="title">Título da missão</label>
-          <input id="title" name="title" type="text" autocomplete="off" required>
-
-          <label for="project">Projeto preservado</label>
-          <select id="project" name="projectId" required>
-            <option value="">Carregando projetos…</option>
-          </select>
-
-          <label for="channel">Canal da IA A</label>
-          <select id="channel" name="channelId" required>
-            <option value="">Carregando canais…</option>
-          </select>
-
-          <button type="submit">Salvar missão</button>
-        </form>
-
-        <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
-      </section>
-
-      <section id="field-connection" class="core-validation-panel field-oauth-panel" aria-labelledby="field-oauth-title">
-        <div>
-          <p class="kicker">CONEXÃO DE CAMPO</p>
-          <h2 id="field-oauth-title">Google / YouTube — 5 canais separados</h2>
-          <p class="oauth-project-summary"><strong>IA A</strong> possui cinco canais distintos no YouTube. Cada canal tem sua própria conexão e seu próprio link.</p>
-          <p id="field-oauth-status" class="form-status" role="status" aria-live="polite"></p>
-          <p id="field-oauth-redirect" class="oauth-redirect"></p>
-          <p class="oauth-safety">OAuth executado no Chrome com Google Identity Services e escopo somente leitura. Client Secret não é usado no navegador.</p>
-        </div>
-        <div id="field-oauth-list" class="oauth-channel-list"></div>
-      </section>
-
-      <section class="missions" aria-labelledby="saved-title">
-        <div class="section-heading">
-          <div>
-            <p class="kicker">MEMÓRIA LOCAL</p>
-            <h2 id="saved-title">Missões salvas</h2>
+      <section class="core-validation-panel folder-panel" aria-labelledby="core-validation-title">
+        <details class="app-folder" name="ia-a-folders">
+          <summary><span>Validação do núcleo</span><small>Abrir pasta</small></summary>
+          <div class="folder-content core-folder-content">
+            <div>
+              <p class="kicker">VALIDAÇÃO INTEGRADA</p>
+              <h2 id="core-validation-title">Núcleo de projetos e missões</h2>
+              <p id="core-validation-status" role="status" aria-live="polite">Aguardando a validação local…</p>
+            </div>
+            <button id="validate-core" class="secondary" type="button">Validar núcleo</button>
           </div>
-          <button id="refresh" class="secondary" type="button">Atualizar</button>
-        </div>
-        <div id="mission-list" class="mission-list"></div>
+        </details>
       </section>
 
-      <section class="projects" aria-labelledby="projects-title">
-        <div class="section-heading">
-          <div>
-            <p class="kicker">PROJETOS SEPARADOS</p>
-            <h2 id="projects-title">Projetos preservados</h2>
+      <section class="hero folder-panel" aria-labelledby="mission-title">
+        <details class="app-folder" name="ia-a-folders">
+          <summary><span>Criar uma missão</span><small>Abrir pasta</small></summary>
+          <div class="folder-content">
+            <p class="kicker">PRIMEIRA FUNÇÃO REAL</p>
+            <h2 id="mission-title">Criar uma missão</h2>
+            <p>Digite o título, escolha o projeto correto e preserve a missão localmente.</p>
+
+            <form id="mission-form">
+              <label for="title">Título da missão</label>
+              <input id="title" name="title" type="text" autocomplete="off" required>
+
+              <label for="project">Projeto preservado</label>
+              <select id="project" name="projectId" required>
+                <option value="">Carregando projetos…</option>
+              </select>
+
+              <label for="channel">Canal da IA A</label>
+              <select id="channel" name="channelId" required>
+                <option value="">Carregando canais…</option>
+              </select>
+
+              <button type="submit">Salvar missão</button>
+            </form>
+
+            <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
           </div>
-          <div class="project-actions">
-            <button id="create-starter-project" class="secondary" type="button">Criar projeto inicial</button>
-            <button id="refresh-projects" class="secondary" type="button">Atualizar</button>
+        </details>
+      </section>
+
+      <section id="field-connection" class="core-validation-panel field-oauth-panel folder-panel" aria-labelledby="field-oauth-title">
+        <details class="app-folder" name="ia-a-folders">
+          <summary><span>Canais do YouTube (5)</span><small>Abrir pasta</small></summary>
+          <div class="folder-content field-folder-content">
+            <div>
+              <p class="kicker">CONEXÃO DE CAMPO</p>
+              <h2 id="field-oauth-title">Google / YouTube — 5 canais separados</h2>
+              <p class="oauth-project-summary"><strong>IA A</strong> possui cinco canais distintos no YouTube. Cada canal tem sua própria conexão e seu próprio link.</p>
+              <p id="field-oauth-status" class="form-status" role="status" aria-live="polite"></p>
+              <p id="field-oauth-redirect" class="oauth-redirect"></p>
+              <p class="oauth-safety">OAuth executado no Chrome com Google Identity Services e escopo somente leitura. Client Secret não é usado no navegador.</p>
+            </div>
+            <div id="field-oauth-list" class="oauth-channel-list"></div>
           </div>
-        </div>
-        <div id="project-list" class="project-list"></div>
+        </details>
+      </section>
+
+      <section class="missions folder-panel" aria-labelledby="saved-title">
+        <details class="app-folder" name="ia-a-folders">
+          <summary><span>Missões salvas</span><small>Abrir pasta</small></summary>
+          <div class="folder-content">
+            <div class="section-heading">
+              <div>
+                <p class="kicker">MEMÓRIA LOCAL</p>
+                <h2 id="saved-title">Missões salvas</h2>
+              </div>
+              <button id="refresh" class="secondary" type="button">Atualizar</button>
+            </div>
+            <div id="mission-list" class="mission-list"></div>
+          </div>
+        </details>
+      </section>
+
+      <section class="projects folder-panel" aria-labelledby="projects-title">
+        <details class="app-folder" name="ia-a-folders">
+          <summary><span>Projetos preservados</span><small>Abrir pasta</small></summary>
+          <div class="folder-content">
+            <div class="section-heading">
+              <div>
+                <p class="kicker">PROJETOS SEPARADOS</p>
+                <h2 id="projects-title">Projetos preservados</h2>
+              </div>
+              <div class="project-actions">
+                <button id="create-starter-project" class="secondary" type="button">Criar projeto inicial</button>
+                <button id="refresh-projects" class="secondary" type="button">Atualizar</button>
+              </div>
+            </div>
+            <div id="project-list" class="project-list"></div>
+          </div>
+        </details>
       </section>
 
       <footer>Anderson comanda. O A lidera. A IA executa.</footer>
