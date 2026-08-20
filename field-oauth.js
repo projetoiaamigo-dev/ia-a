@@ -4,8 +4,7 @@ const redirectNode = document.querySelector("#field-oauth-redirect");
 const listNode = document.querySelector("#field-oauth-list");
 
 const YOUTUBE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
-const CLIENT_ID_KEY = "iaa.google.oauth.client_id";
-const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5il3orlibet892c.apps.googleusercontent.com";
+const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5ii3orlibet892c.apps.googleusercontent.com";
 const CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
 
 const slots = [
@@ -37,14 +36,6 @@ function saveConnections(value) {
 
 function getClientId() {
   return DEFAULT_CLIENT_ID;
-}
-
-function saveClientId(value) {
-  const clean = String(value || "").trim();
-  if (!/^[0-9A-Za-z_-]+\.apps\.googleusercontent\.com$/.test(clean)) {
-    throw new Error("Client ID inválido. Ele deve terminar em .apps.googleusercontent.com");
-  }
-  localStorage.setItem(CLIENT_ID_KEY, clean);
 }
 
 async function fetchMyChannel(accessToken) {
