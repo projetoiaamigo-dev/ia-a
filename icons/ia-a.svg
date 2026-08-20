@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">IA A</title>
+  <rect width="512" height="512" rx="112" fill="#090909"/>
+  <path d="M148 384 238 128h38l90 256h-58l-18-58h-70l-18 58h-54Zm88-110h38l-19-66-19 66Z" fill="#e0ae4c"/>
+  <circle cx="256" cy="256" r="202" fill="none" stroke="#8d5c18" stroke-width="18"/>
+</svg>
