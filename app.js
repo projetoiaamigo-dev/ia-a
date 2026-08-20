@@ -1544,7 +1544,7 @@ window.addEventListener("offline", updateConnectionStatus);
 updateConnectionStatus();
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js", { scope: "/" }).catch(() => {
+  navigator.serviceWorker.register("./service-worker.js", { scope: "./" }).catch(() => {
     localStatus.dataset.offline = "true";
     localStatus.textContent = "Instalação local pendente";
   });
