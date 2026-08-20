@@ -105,12 +105,12 @@ function normalizeProject(project) {
   return {
     schemaVersion: Math.max(Number(project?.schemaVersion) || 1, 2),
     id: project?.id,
-    name: String(project?.name || "Projeto IA A"),
+    name: String(project?.name || "PROJETO IA A"),
     status: project?.status === "archived" ? "archived" : "active",
     localPermissions: { mode: project?.localPermissions?.mode === "read_only" ? "read_only" : "read_write" },
     createdAt,
     updatedAt: project?.updatedAt || createdAt,
-    history: Array.isArray(project?.history) && project.history.length ? project.history : [{ type: "project.created", at: createdAt, name: String(project?.name || "Projeto IA A") }]
+    history: Array.isArray(project?.history) && project.history.length ? project.history : [{ type: "project.created", at: createdAt, name: String(project?.name || "PROJETO IA A") }]
   };
 }
 
@@ -231,9 +231,9 @@ const groupedSteps = {
 async function apiFetch(url, method, init) {
   const state = readState();
 
-  if (method === "GET" && url.pathname === "/api/health") return json({ status: "ok", mode: "chrome-local", runtimeVersion: "v008-secure-oauth-browser-1", externalConnections: false });
+  if (method === "GET" && url.pathname === "/api/health") return json({ status: "ok", mode: "chrome-local", runtimeVersion: "v009-shared-official-youtube-five-brains", externalConnections: false });
   if (method === "GET" && url.pathname === "/api/channels") return json({ channels: PILOT_CHANNELS.map(({ id, name }) => ({ id, name })) });
-  if (method === "GET" && url.pathname === "/api/brains") return json({ brains: listChannelBrains(), researchMode: "verified_public_static", externalConnections: false });
+  if (method === "GET" && url.pathname === "/api/brains") return json({ brains: listChannelBrains(), researchMode: "official_owner_base_with_own_channel_field_learning", externalConnections: false });
   if (method === "GET" && url.pathname === "/api/brains/versions") {
     const channelId = url.searchParams.get("channelId");
     const versions = listChannelBrainVersions(channelId);
@@ -389,11 +389,11 @@ window.fetch = async function(input, init = {}) {
 };
 
 window.IAAChromeRuntime = Object.freeze({
-  version: "v008-secure-oauth-browser-1",
+  version: "v009-shared-official-youtube-five-brains",
   mode: "chrome-local-core",
   stateSchemaVersion: STATE_SCHEMA,
   reset() { localStorage.removeItem(KEY); location.reload(); },
-  createStarterProject(name = "Projeto IA A") {
+  createStarterProject(name = "PROJETO IA A") {
     const state = readState();
     const active = state.projects.find((p) => p.status === "active");
     if (active) return active;
@@ -401,6 +401,6 @@ window.IAAChromeRuntime = Object.freeze({
   },
   diagnostics() {
     const state = readState();
-    return { runtimeVersion: "v008-secure-oauth-browser-1", stateSchemaVersion: STATE_SCHEMA, projects: state.projects.length, missions: state.missions.length, core: validateProjectMissionCore({ projects: state.projects, missions: state.missions }) };
+    return { runtimeVersion: "v009-shared-official-youtube-five-brains", stateSchemaVersion: STATE_SCHEMA, projects: state.projects.length, missions: state.missions.length, core: validateProjectMissionCore({ projects: state.projects, missions: state.missions }) };
   }
 });
