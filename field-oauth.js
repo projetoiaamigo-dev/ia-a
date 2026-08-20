@@ -12,8 +12,8 @@ const OFFICIAL_CHANNEL_NAME = "PROJETO IA";
 const PROJECT_CHANNELS = Object.freeze([
   Object.freeze({ id: "web-radio-louvar", name: "Web Rádio Louvar", status: "active", logo: "./icons/channels/web-radio-louvar.webp" }),
   Object.freeze({ id: "fale-com-deus", name: "Fale com Deus", status: "active", logo: "./icons/channels/fale-com-deus.webp" }),
-  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "configuration_pending", logo: "./icons/channels/codigo-da-biblia.webp" }),
   Object.freeze({ id: "eu-oro-por-voce", name: "Eu Oro por Você", status: "configuration_pending", logo: "./icons/channels/eu-oro-por-voce.webp" }),
+  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "configuration_pending", logo: "./icons/channels/codigo-da-biblia.webp" }),
   Object.freeze({ id: "palavra-que-desperta", name: "Palavra que Desperta", status: "configuration_pending", logo: "./icons/channels/palavra-que-desperta.webp" })
 ]);
 
