@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#090909">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>IA A — Missões</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icons/ia-a.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css?v=8">
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ir para o conteúdo principal</a>
+    <main id="main-content" class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">INTELIGÊNCIA ARTIFICIAL AMIGO</p>
+          <h1>IA A</h1>
+        </div>
+        <span id="local-status" class="local-status" role="status">Núcleo local</span>
+      </header>
+
+      <section class="progress-panel" aria-labelledby="progress-title">
+        <div class="progress-copy">
+          <p class="kicker">RECONSTRUÇÃO DO SOFTWARE</p>
+          <h2 id="progress-title"><span id="progress-value">0</span>% concluído</h2>
+          <p id="progress-next">Verificando o próximo ponto real…</p>
+        </div>
+        <div
+          id="progress-track"
+          class="progress-track"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <span id="progress-fill"></span>
+        </div>
+      </section>
+
+      <section class="core-validation-panel" aria-labelledby="core-validation-title">
+        <div>
+          <p class="kicker">VALIDAÇÃO INTEGRADA</p>
+          <h2 id="core-validation-title">Núcleo de projetos e missões</h2>
+          <p id="core-validation-status" role="status" aria-live="polite">
+            Aguardando a validação local…
+          </p>
+        </div>
+        <button id="validate-core" class="secondary" type="button">Validar núcleo</button>
+      </section>
+
+      <section class="hero" aria-labelledby="mission-title">
+        <p class="kicker">PRIMEIRA FUNÇÃO REAL</p>
+        <h2 id="mission-title">Criar uma missão</h2>
+        <p>Digite o título, escolha o projeto correto e preserve a missão localmente.</p>
+
+        <form id="mission-form">
+          <label for="title">Título da missão</label>
+          <input id="title" name="title" type="text" autocomplete="off" required>
+
+          <label for="project">Projeto preservado</label>
+          <select id="project" name="projectId" required>
+            <option value="">Carregando projetos…</option>
+          </select>
+
+          <label for="channel">Canal piloto</label>
+          <select id="channel" name="channelId" required>
+            <option value="">Carregando canais…</option>
+          </select>
+
+          <button type="submit">Salvar missão</button>
+        </form>
+
+        <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="field-connection" class="core-validation-panel field-oauth-panel" aria-labelledby="field-oauth-title">
+        <div>
+          <p class="kicker">CONEXÃO DE CAMPO</p>
+          <h2 id="field-oauth-title">Google / YouTube — canais piloto</h2>
+          <p id="field-oauth-status" class="form-status" role="status" aria-live="polite"></p>
+          <p id="field-oauth-redirect" class="oauth-redirect"></p>
+          <p class="oauth-safety">OAuth executado no Chrome com Google Identity Services e escopo somente leitura. Client Secret não é usado no navegador.</p>
+        </div>
+        <div id="field-oauth-list" class="oauth-channel-list"></div>
+      </section>
+
+      <section class="missions" aria-labelledby="saved-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">MEMÓRIA LOCAL</p>
+            <h2 id="saved-title">Missões salvas</h2>
+          </div>
+          <button id="refresh" class="secondary" type="button">Atualizar</button>
+        </div>
+        <div id="mission-list" class="mission-list"></div>
+      </section>
+
+      <section class="projects" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">PROJETOS SEPARADOS</p>
+            <h2 id="projects-title">Projetos preservados</h2>
+          </div>
+          <div class="project-actions">
+            <button id="create-starter-project" class="secondary" type="button">Criar projeto inicial</button>
+            <button id="refresh-projects" class="secondary" type="button">Atualizar</button>
+          </div>
+        </div>
+        <div id="project-list" class="project-list"></div>
+      </section>
+
+      <footer>
+        Anderson comanda. O A lidera. A IA executa.
+      </footer>
+    </main>
+    <script type="module" src="/browser-runtime.js?v=8"></script>
+    <script type="module" src="/app.js?v=8"></script>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <script type="module" src="/field-oauth.js?v=8-chrome"></script>
+  </body>
+</html>
