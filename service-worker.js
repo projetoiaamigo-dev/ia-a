@@ -1,18 +1,19 @@
-const CACHE_NAME = "ia-a-local-shell-v5";
+const CACHE_NAME = "ia-a-local-shell-v6";
 const SCOPE_URL = self.registration.scope;
 const INDEX_URL = new URL("./index.html", SCOPE_URL).href;
 const SHELL_RESOURCES = [
   "./",
   "./index.html",
-  "./styles.css?v=9",
+  "./styles.css?v=10",
   "./app.js?v=11",
-  "./browser-runtime.js?v=9",
-  "./field-oauth.js?v=12-multichannel",
+  "./browser-runtime.js?v=10",
+  "./field-oauth.js?v=13-shared-official",
   "./browser-core/android-experience.js",
   "./browser-core/audit-checkpoints.js",
   "./browser-core/brain-core.js",
   "./browser-core/brain-references.js",
   "./browser-core/brains.js",
+  "./browser-core/official-brains.js",
   "./browser-core/channels.js",
   "./browser-core/core-validation.js",
   "./browser-core/crypto-browser.js",
@@ -27,7 +28,12 @@ const SHELL_RESOURCES = [
   "./browser-core/text-package.js",
   "./browser-core/validation-safety.js",
   "./manifest.webmanifest",
-  "./icons/ia-a.svg"
+  "./icons/ia-a.svg",
+  "./icons/channels/web-radio-louvar.webp",
+  "./icons/channels/fale-com-deus.webp",
+  "./icons/channels/eu-oro-por-voce.webp",
+  "./icons/channels/codigo-da-biblia.webp",
+  "./icons/channels/palavra-que-desperta.webp"
 ].map((path) => new URL(path, SCOPE_URL).href);
 
 self.addEventListener("install", (event) => {
