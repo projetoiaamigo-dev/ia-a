@@ -12,9 +12,9 @@ const OFFICIAL_CHANNEL_NAME = "PROJETO IA";
 const PROJECT_CHANNELS = Object.freeze([
   Object.freeze({ id: "web-radio-louvar", name: "Web Rádio Louvar", status: "active", logo: "./icons/channels/web-radio-louvar.webp" }),
   Object.freeze({ id: "fale-com-deus", name: "Fale com Deus", status: "active", logo: "./icons/channels/fale-com-deus.webp" }),
-  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "planned", logo: "./icons/channels/codigo-da-biblia.webp" }),
-  Object.freeze({ id: "eu-oro-por-voce", name: "Eu Oro por Você", status: "planned", logo: "./icons/channels/eu-oro-por-voce.webp" }),
-  Object.freeze({ id: "palavra-que-desperta", name: "Palavra que Desperta", status: "planned", logo: "./icons/channels/palavra-que-desperta.webp" })
+  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "configuration_pending", logo: "./icons/channels/codigo-da-biblia.webp" }),
+  Object.freeze({ id: "eu-oro-por-voce", name: "Eu Oro por Você", status: "configuration_pending", logo: "./icons/channels/eu-oro-por-voce.webp" }),
+  Object.freeze({ id: "palavra-que-desperta", name: "Palavra que Desperta", status: "configuration_pending", logo: "./icons/channels/palavra-que-desperta.webp" })
 ]);
 
 let activeToken = null;
@@ -349,7 +349,7 @@ function renderProjectChannels() {
     const name = document.createElement("strong");
     name.textContent = channel.name;
     const status = document.createElement("small");
-    status.textContent = channel.status === "active" ? "Canal atual" : "Canal planejado";
+    status.textContent = channel.status === "active" ? "Em atividade" : "Em configuração";
     text.append(name, status);
     item.append(logo, text);
     list.append(item);
