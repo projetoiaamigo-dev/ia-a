@@ -1,0 +1,18 @@
+name: IA A test
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo ok > .iaa-action-ok
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .iaa-action-ok
+          git commit -m 'IA A action test [skip ci]' || exit 0
+          git push
