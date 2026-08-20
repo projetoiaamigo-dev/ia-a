@@ -5,12 +5,17 @@ const listNode = document.querySelector("#field-oauth-list");
 
 const YOUTUBE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
 const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5ii3orlibet892c.apps.googleusercontent.com";
-const CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
-
-const slots = [
-  { slot: "fale-com-deus", expectedName: "Fale com Deus" },
-  { slot: "web-radio-louvar", expectedName: "Web Rádio Louvar" }
-];
+const OFFICIAL_CONNECTION_KEY = "iaa.google.youtube.official-connection.v2";
+const LEGACY_CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
+const PROJECT_NAME = "PROJETO IA A";
+const OFFICIAL_CHANNEL_NAME = "PROJETO IA";
+const PROJECT_CHANNELS = Object.freeze([
+  Object.freeze({ id: "web-radio-louvar", name: "Web Rádio Louvar", status: "active", logo: "./icons/channels/web-radio-louvar.webp" }),
+  Object.freeze({ id: "fale-com-deus", name: "Fale com Deus", status: "active", logo: "./icons/channels/fale-com-deus.webp" }),
+  Object.freeze({ id: "codigo-da-biblia", name: "Código da Bíblia", status: "planned", logo: "./icons/channels/codigo-da-biblia.webp" }),
+  Object.freeze({ id: "eu-oro-por-voce", name: "Eu Oro por Você", status: "planned", logo: "./icons/channels/eu-oro-por-voce.webp" }),
+  Object.freeze({ id: "palavra-que-desperta", name: "Palavra que Desperta", status: "planned", logo: "./icons/channels/palavra-que-desperta.webp" })
+]);
 
 let activeToken = null;
 let tokenClient = null;
@@ -20,17 +25,21 @@ function setMessage(text, kind = "") {
   statusNode.dataset.kind = kind;
 }
 
-function loadConnections() {
+function readStoredJson(key) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(CONNECTIONS_KEY) || "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
+    const parsed = JSON.parse(localStorage.getItem(key) || "null");
+    return parsed && typeof parsed === "object" ? parsed : null;
   } catch {
-    return {};
+    return null;
   }
 }
 
-function saveConnections(value) {
-  localStorage.setItem(CONNECTIONS_KEY, JSON.stringify(value));
+function saveConnection(value) {
+  if (!value) {
+    localStorage.removeItem(OFFICIAL_CONNECTION_KEY);
+    return;
+  }
+  localStorage.setItem(OFFICIAL_CONNECTION_KEY, JSON.stringify(value));
 }
 
 function getClientId() {
@@ -60,13 +69,33 @@ function getSelectedChannel(connection) {
   return channels.find((channel) => channel.id === selectedId) || null;
 }
 
-function getUsedChannelIds(connections, currentSlot) {
-  return new Set(
-    Object.entries(connections)
-      .filter(([slot]) => slot !== currentSlot)
-      .map(([, connection]) => getSelectedChannel(connection)?.id)
-      .filter(Boolean)
-  );
+function migrateLegacyConnection() {
+  const legacy = readStoredJson(LEGACY_CONNECTIONS_KEY);
+  if (!legacy) return null;
+  const candidates = Object.values(legacy).filter((connection) => connection?.connected);
+  const source = candidates.find((connection) => connection.confirmed && getSelectedChannel(connection))
+    || candidates.find((connection) => getSelectedChannel(connection));
+  if (!source) return null;
+  const availableChannels = getAvailableChannels(source);
+  const selectedChannel = getSelectedChannel(source);
+  const migrated = {
+    connected: true,
+    confirmed: false,
+    channelScanComplete: source.channelScanComplete === true,
+    availableChannels,
+    selectedChannelId: selectedChannel?.id || "",
+    actualChannel: selectedChannel,
+    readOnly: true,
+    migratedFromLegacy: true,
+    connectedAt: source.connectedAt || new Date().toISOString(),
+    migratedAt: new Date().toISOString()
+  };
+  saveConnection(migrated);
+  return migrated;
+}
+
+function loadConnection() {
+  return readStoredJson(OFFICIAL_CONNECTION_KEY) || migrateLegacyConnection();
 }
 
 async function fetchMyChannels(accessToken) {
@@ -80,23 +109,20 @@ async function fetchMyChannels(accessToken) {
   });
   const data = await response.json();
   if (!response.ok) {
-    const message = data?.error?.message || "Não foi possível ler os canais do YouTube.";
+    const message = data?.error?.message || "Não foi possível ler o canal oficial do YouTube.";
     throw new Error(message);
   }
   const unique = new Map();
   (data?.items || [])
-    .map((channel) => normalizeChannel({
-      id: channel.id,
-      title: channel.snippet?.title
-    }))
+    .map((channel) => normalizeChannel({ id: channel.id, title: channel.snippet?.title }))
     .filter(Boolean)
     .forEach((channel) => unique.set(channel.id, channel));
   const channels = [...unique.values()].sort((a, b) => a.title.localeCompare(b.title, "pt-BR"));
-  if (!channels.length) throw new Error("A conta autorizada não retornou canais do YouTube.");
+  if (!channels.length) throw new Error("A conta autorizada não retornou um canal do YouTube.");
   return channels;
 }
 
-function ensureTokenClient(slot) {
+function ensureTokenClient() {
   const clientId = getClientId();
   if (!clientId) throw new Error("Client ID do Google não configurado.");
   if (!window.google?.accounts?.oauth2) throw new Error("Google Identity Services ainda não carregou. Atualize a página.");
@@ -112,9 +138,8 @@ function ensureTokenClient(slot) {
       try {
         activeToken = response.access_token || null;
         const channels = await fetchMyChannels(activeToken);
-        const connections = loadConnections();
         const selectedChannel = channels.length === 1 ? channels[0] : null;
-        connections[slot] = {
+        saveConnection({
           connected: true,
           confirmed: false,
           channelScanComplete: true,
@@ -122,12 +147,12 @@ function ensureTokenClient(slot) {
           selectedChannelId: selectedChannel?.id || "",
           actualChannel: selectedChannel,
           readOnly: true,
+          migratedFromLegacy: false,
           connectedAt: new Date().toISOString()
-        };
-        saveConnections(connections);
+        });
         const count = channels.length;
         setMessage(
-          `${count} ${count === 1 ? "canal encontrado" : "canais encontrados"}. Escolha abaixo qual pertence a este espaço.`,
+          `${count} ${count === 1 ? "canal encontrado" : "canais encontrados"}. Confirme abaixo o canal oficial do ${PROJECT_NAME}.`,
           "success"
         );
         render();
@@ -144,9 +169,9 @@ function ensureTokenClient(slot) {
   });
 }
 
-function connect(slot) {
+function connect() {
   try {
-    ensureTokenClient(slot);
+    ensureTokenClient();
     tokenClient.requestAccessToken({ prompt: "select_account consent" });
   } catch (error) {
     setMessage(error.message, "error");
@@ -154,50 +179,38 @@ function connect(slot) {
   }
 }
 
-function selectChannel(slot, channelId) {
-  const connections = loadConnections();
-  const connection = connections[slot];
+function selectChannel(channelId) {
+  const connection = loadConnection();
   if (!connection?.connected) return;
   const channel = getAvailableChannels(connection).find((item) => item.id === channelId) || null;
-  const usedIds = getUsedChannelIds(connections, slot);
-  if (channel && usedIds.has(channel.id)) {
-    setMessage("Este canal já está associado a outro espaço. Escolha um canal diferente.", "error");
-    return;
-  }
   connection.selectedChannelId = channel?.id || "";
   connection.actualChannel = channel;
   connection.confirmed = false;
-  saveConnections(connections);
-  setMessage(channel ? `Canal selecionado: ${channel.title}.` : "Escolha um canal para continuar.", channel ? "success" : "");
+  saveConnection(connection);
+  setMessage(channel ? `Canal oficial selecionado: ${channel.title}.` : "Escolha o canal oficial para continuar.", channel ? "success" : "");
   render();
 }
 
-function confirmSlot(slot) {
-  const connections = loadConnections();
-  const connection = connections[slot];
+function confirmOfficialChannel() {
+  const connection = loadConnection();
   const selectedChannel = getSelectedChannel(connection);
   if (!connection?.connected || !selectedChannel) {
-    setMessage("Escolha um canal antes de confirmar.", "error");
-    return;
-  }
-  if (getUsedChannelIds(connections, slot).has(selectedChannel.id)) {
-    setMessage("Este canal já está associado a outro espaço. Escolha um canal diferente.", "error");
+    setMessage("Escolha o canal oficial antes de confirmar.", "error");
     return;
   }
   connection.selectedChannelId = selectedChannel.id;
   connection.actualChannel = selectedChannel;
   connection.confirmed = true;
-  saveConnections(connections);
-  setMessage(`${slots.find((item) => item.slot === slot)?.expectedName || "Canal"} associado a ${selectedChannel.title}.`, "success");
+  saveConnection(connection);
+  setMessage(`Canal oficial ${selectedChannel.title} confirmado para o ${PROJECT_NAME}.`, "success");
   render();
 }
 
-function disconnectSlot(slot) {
-  const connections = loadConnections();
-  delete connections[slot];
-  saveConnections(connections);
+function disconnect() {
+  saveConnection(null);
+  localStorage.removeItem(LEGACY_CONNECTIONS_KEY);
   activeToken = null;
-  setMessage("Associação removida deste navegador.", "success");
+  setMessage("Associação oficial removida deste navegador.", "success");
   render();
 }
 
@@ -224,120 +237,137 @@ function renderClientIdSetup() {
   return wrap;
 }
 
-function renderChannelPicker(def, connection, connections, card) {
-  const channels = getAvailableChannels(connection);
-  const selectedChannel = getSelectedChannel(connection);
-  const usedIds = getUsedChannelIds(connections, def.slot);
-
-  if (!connection.channelScanComplete) {
-    const legacy = document.createElement("p");
-    legacy.className = "oauth-safety";
-    legacy.textContent = "Conexão anterior detectada. Busque os canais novamente para separar corretamente esta conta.";
-    card.append(legacy);
-    return;
-  }
-
-  const summary = document.createElement("p");
-  summary.className = "oauth-safety";
-  summary.textContent = channels.length === 1
-    ? "1 canal disponível. Se esperava outro, busque novamente e escolha outro perfil no Google."
-    : `${channels.length} canais disponíveis nesta autorização. Escolha o canal deste espaço.`;
-  card.append(summary);
-
-  if (channels.length > 1) {
-    const label = document.createElement("label");
-    label.textContent = `Canal do YouTube para ${def.expectedName}`;
-    const select = document.createElement("select");
-    select.setAttribute("aria-label", `Canal do YouTube para ${def.expectedName}`);
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Escolha o canal correto";
-    select.append(placeholder);
-    channels.forEach((channel) => {
-      const option = document.createElement("option");
-      option.value = channel.id;
-      option.textContent = usedIds.has(channel.id) ? `${channel.title} — já associado` : channel.title;
-      option.disabled = usedIds.has(channel.id);
-      select.append(option);
-    });
-    select.value = selectedChannel?.id || "";
-    select.addEventListener("change", () => selectChannel(def.slot, select.value));
-    label.append(select);
-    card.append(label);
-  }
-}
-
-function renderConnection(def, connections) {
-  const connection = connections[def.slot] || null;
+function renderOfficialConnection(connection) {
   const selectedChannel = getSelectedChannel(connection);
   const card = document.createElement("article");
   card.className = "oauth-channel-card";
   const title = document.createElement("h3");
-  title.textContent = def.expectedName;
+  title.textContent = "Canal oficial do YouTube";
   const copy = document.createElement("p");
   if (!connection?.connected) {
-    copy.textContent = "Ainda não conectado.";
+    copy.textContent = `Ainda não conectado. Canal esperado: ${OFFICIAL_CHANNEL_NAME}.`;
   } else if (connection.confirmed && selectedChannel) {
-    copy.textContent = `Canal confirmado: ${selectedChannel.title}`;
+    copy.textContent = `Canal oficial confirmado: ${selectedChannel.title}`;
   } else if (selectedChannel) {
-    copy.textContent = `Canal selecionado: ${selectedChannel.title}`;
+    copy.textContent = `Canal oficial identificado: ${selectedChannel.title}`;
   } else {
-    copy.textContent = "Conta conectada. Escolha o canal correto abaixo.";
+    copy.textContent = "Conta conectada. Escolha o canal oficial abaixo.";
   }
   const safety = document.createElement("p");
   safety.className = "oauth-safety";
-  safety.textContent = "Somente leitura (youtube.readonly). Publicação desativada.";
+  safety.textContent = "Uma única conexão atende todos os canais internos. Somente leitura; publicação desativada.";
   card.append(title, copy, safety);
 
   if (!connection?.connected) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "secondary";
-    button.textContent = `Conectar ${def.expectedName}`;
+    button.textContent = "Conectar canal oficial";
     button.disabled = !getClientId();
-    button.addEventListener("click", () => connect(def.slot));
+    button.addEventListener("click", connect);
     card.append(button);
     return card;
   }
 
-  renderChannelPicker(def, connection, connections, card);
+  if (connection.migratedFromLegacy) {
+    const migrated = document.createElement("p");
+    migrated.className = "oauth-safety";
+    migrated.textContent = "A conexão anterior foi preservada e convertida para uma única conexão oficial.";
+    card.append(migrated);
+  }
 
-  if (connection.channelScanComplete && !connection.confirmed) {
+  const channels = getAvailableChannels(connection);
+  if (connection.channelScanComplete && channels.length > 1) {
+    const label = document.createElement("label");
+    label.textContent = `Canal oficial do ${PROJECT_NAME}`;
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", `Canal oficial do ${PROJECT_NAME}`);
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Escolha o canal oficial";
+    select.append(placeholder);
+    channels.forEach((channel) => {
+      const option = document.createElement("option");
+      option.value = channel.id;
+      option.textContent = channel.title;
+      select.append(option);
+    });
+    select.value = selectedChannel?.id || "";
+    select.addEventListener("change", () => selectChannel(select.value));
+    label.append(select);
+    card.append(label);
+  }
+
+  if (!connection.confirmed) {
     const confirm = document.createElement("button");
     confirm.type = "button";
     confirm.className = "secondary";
-    confirm.textContent = "Confirmar canal deste espaço";
-    confirm.disabled = !selectedChannel || getUsedChannelIds(connections, def.slot).has(selectedChannel.id);
-    confirm.addEventListener("click", () => confirmSlot(def.slot));
+    confirm.textContent = "Confirmar canal oficial";
+    confirm.disabled = !selectedChannel;
+    confirm.addEventListener("click", confirmOfficialChannel);
     card.append(confirm);
-  } else if (connection.confirmed) {
+  } else {
     const ok = document.createElement("p");
     ok.className = "oauth-confirmed";
-    ok.textContent = "Canal associado sem duplicação.";
+    ok.textContent = `Conexão oficial compartilhada pelos canais do ${PROJECT_NAME}.`;
     card.append(ok);
   }
 
   const refresh = document.createElement("button");
   refresh.type = "button";
   refresh.className = "secondary";
-  refresh.textContent = connection.channelScanComplete ? "Buscar canais novamente" : "Buscar canais da conta";
-  refresh.addEventListener("click", () => connect(def.slot));
-  const disconnect = document.createElement("button");
-  disconnect.type = "button";
-  disconnect.className = "secondary";
-  disconnect.textContent = "Remover associação local";
-  disconnect.addEventListener("click", () => disconnectSlot(def.slot));
-  card.append(refresh, disconnect);
+  refresh.textContent = "Buscar canal novamente";
+  refresh.addEventListener("click", connect);
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "secondary";
+  remove.textContent = "Remover associação local";
+  remove.addEventListener("click", disconnect);
+  card.append(refresh, remove);
+  return card;
+}
+
+function renderProjectChannels() {
+  const card = document.createElement("article");
+  card.className = "oauth-channel-card";
+  const title = document.createElement("h3");
+  title.textContent = `Canais do ${PROJECT_NAME}`;
+  const copy = document.createElement("p");
+  copy.textContent = `Todos usam o mesmo canal oficial do YouTube: ${OFFICIAL_CHANNEL_NAME}.`;
+  const list = document.createElement("ul");
+  list.className = "oauth-project-channel-list";
+  PROJECT_CHANNELS.forEach((channel) => {
+    const item = document.createElement("li");
+    item.className = "oauth-project-channel-item";
+    const logo = document.createElement("img");
+    logo.src = channel.logo;
+    logo.alt = `Identidade de ${channel.name}`;
+    logo.width = 72;
+    logo.height = 72;
+    logo.loading = "lazy";
+    const text = document.createElement("span");
+    const name = document.createElement("strong");
+    name.textContent = channel.name;
+    const status = document.createElement("small");
+    status.textContent = channel.status === "active" ? "Canal atual" : "Canal planejado";
+    text.append(name, status);
+    item.append(logo, text);
+    list.append(item);
+  });
+  card.append(title, copy, list);
   return card;
 }
 
 function render() {
-  const connections = loadConnections();
+  const connection = loadConnection();
   redirectNode.textContent = `Chrome HTTPS: ${location.origin} · origem autorizada no Google.`;
-  const nodes = [renderClientIdSetup(), ...slots.map((slot) => renderConnection(slot, connections))];
-  listNode.replaceChildren(...nodes);
+  listNode.replaceChildren(
+    renderClientIdSetup(),
+    renderOfficialConnection(connection),
+    renderProjectChannels()
+  );
   if (!statusNode.textContent) {
-    setMessage("Modo Chrome pronto para listar e separar canais do Google/YouTube em somente leitura.", "success");
+    setMessage(`Uma conexão Google/YouTube atende todos os canais do ${PROJECT_NAME}.`, "success");
   }
 }
 
