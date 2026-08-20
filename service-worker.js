@@ -1,4 +1,4 @@
-const CACHE_NAME = "ia-a-local-shell-v9";
+const CACHE_NAME = "ia-a-local-shell-v10";
 const SCOPE_URL = self.registration.scope;
 const INDEX_URL = new URL("./index.html", SCOPE_URL).href;
 const SHELL_RESOURCES = [
@@ -7,7 +7,7 @@ const SHELL_RESOURCES = [
   "./styles.css?v=13-folder-dashboard",
   "./app.js?v=11",
   "./browser-runtime.js?v=11",
-  "./field-oauth.js?v=14-five-distinct",
+  "./field-oauth.js?v=15-official-links",
   "./browser-core/android-experience.js",
   "./browser-core/audit-checkpoints.js",
   "./browser-core/brain-core.js",
