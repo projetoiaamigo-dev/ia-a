@@ -710,3 +710,143 @@ footer {
     padding-top: 1rem;
   }
 }
+
+/* Android single-screen dashboard: secondary tools open as folders. */
+@media (max-width: 64rem) {
+  .topbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .topbar .local-status {
+    width: auto;
+    min-height: 2.2rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.82rem;
+  }
+
+  .progress-panel {
+    grid-template-columns: minmax(0, 1fr) 7rem;
+    align-items: center;
+    min-height: 3.4rem;
+    margin-top: 0.45rem;
+    padding: 0.55rem 0.7rem;
+  }
+
+  .progress-copy .kicker,
+  .progress-copy p:last-child {
+    display: none;
+  }
+
+  .progress-copy h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .progress-track {
+    height: 0.5rem;
+  }
+
+  .folder-panel {
+    display: block;
+    min-height: 0;
+    margin-top: 0.45rem;
+    padding: 0.35rem;
+    border-radius: 0.75rem;
+  }
+
+  .folder-panel .app-folder {
+    width: 100%;
+  }
+
+  .app-folder > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 3.3rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #4a4031;
+    border-radius: 0.65rem;
+    color: #f5f1e8;
+    font-size: 1.08rem;
+    font-weight: 900;
+    line-height: 1.15;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .app-folder > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .app-folder > summary::before {
+    content: "▸";
+    flex: 0 0 auto;
+    color: #e8b552;
+    font-size: 1.15rem;
+    transition: transform 160ms ease;
+  }
+
+  .app-folder[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .app-folder > summary small {
+    margin-left: auto;
+    color: #d8b66e;
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .app-folder[open] > summary small {
+    color: #9bd1a3;
+  }
+
+  .app-folder[open] > summary small::before {
+    content: "Fechar";
+    font-size: 0.82rem;
+  }
+
+  .app-folder[open] > summary small {
+    font-size: 0;
+  }
+
+  .folder-content {
+    padding: 0.75rem 0.2rem 0.2rem;
+  }
+
+  .core-folder-content,
+  .field-folder-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .folder-content h2 {
+    font-size: 1.28rem;
+  }
+
+  .folder-content p,
+  .folder-content label,
+  .folder-content button,
+  .folder-content input,
+  .folder-content select {
+    font-size: 0.92rem;
+  }
+
+  .folder-content .oauth-channel-heading h3 {
+    font-size: 1rem;
+  }
+
+  .shell {
+    padding-bottom: 0.7rem;
+  }
+
+  footer {
+    padding-top: 0.65rem;
+    font-size: 0.7rem;
+  }
+}
