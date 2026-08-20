@@ -87,7 +87,7 @@ import { getSoftwareProgress } from "./browser-core/software-progress.js";
 
 const nativeFetch = window.fetch.bind(window);
 const KEY = "ia_a_chrome_runtime_v1";
-const STATE_SCHEMA = 2;
+const STATE_SCHEMA = 3;
 
 if (!Array.prototype.toReversed) {
   Object.defineProperty(Array.prototype, "toReversed", { value() { return [...this].reverse(); }, configurable: true });
@@ -100,17 +100,23 @@ function nowIso() { return new Date().toISOString(); }
 function initialState() { return { schemaVersion: STATE_SCHEMA, projects: [], missions: [] }; }
 function clone(value) { return structuredClone(value); }
 
+function normalizeProjectName(value) {
+  const name = String(value || "IA A").trim() || "IA A";
+  return name.toLocaleUpperCase("pt-BR") === "PROJETO IA A" ? "IA A" : name;
+}
+
 function normalizeProject(project) {
   const createdAt = project?.createdAt || nowIso();
+  const name = normalizeProjectName(project?.name);
   return {
-    schemaVersion: Math.max(Number(project?.schemaVersion) || 1, 2),
+    schemaVersion: Math.max(Number(project?.schemaVersion) || 1, 3),
     id: project?.id,
-    name: String(project?.name || "PROJETO IA A"),
+    name,
     status: project?.status === "archived" ? "archived" : "active",
     localPermissions: { mode: project?.localPermissions?.mode === "read_only" ? "read_only" : "read_write" },
     createdAt,
     updatedAt: project?.updatedAt || createdAt,
-    history: Array.isArray(project?.history) && project.history.length ? project.history : [{ type: "project.created", at: createdAt, name: String(project?.name || "PROJETO IA A") }]
+    history: Array.isArray(project?.history) && project.history.length ? project.history : [{ type: "project.created", at: createdAt, name }]
   };
 }
 
@@ -231,7 +237,7 @@ const groupedSteps = {
 async function apiFetch(url, method, init) {
   const state = readState();
 
-  if (method === "GET" && url.pathname === "/api/health") return json({ status: "ok", mode: "chrome-local", runtimeVersion: "v009-shared-official-youtube-five-brains", externalConnections: false });
+  if (method === "GET" && url.pathname === "/api/health") return json({ status: "ok", mode: "chrome-local", runtimeVersion: "v010-ia-a-five-distinct-youtube-channels", externalConnections: false });
   if (method === "GET" && url.pathname === "/api/channels") return json({ channels: PILOT_CHANNELS.map(({ id, name }) => ({ id, name })) });
   if (method === "GET" && url.pathname === "/api/brains") return json({ brains: listChannelBrains(), researchMode: "official_owner_base_with_own_channel_field_learning", externalConnections: false });
   if (method === "GET" && url.pathname === "/api/brains/versions") {
@@ -389,11 +395,11 @@ window.fetch = async function(input, init = {}) {
 };
 
 window.IAAChromeRuntime = Object.freeze({
-  version: "v009-shared-official-youtube-five-brains",
+  version: "v010-ia-a-five-distinct-youtube-channels",
   mode: "chrome-local-core",
   stateSchemaVersion: STATE_SCHEMA,
   reset() { localStorage.removeItem(KEY); location.reload(); },
-  createStarterProject(name = "PROJETO IA A") {
+  createStarterProject(name = "IA A") {
     const state = readState();
     const active = state.projects.find((p) => p.status === "active");
     if (active) return active;
@@ -401,6 +407,6 @@ window.IAAChromeRuntime = Object.freeze({
   },
   diagnostics() {
     const state = readState();
-    return { runtimeVersion: "v009-shared-official-youtube-five-brains", stateSchemaVersion: STATE_SCHEMA, projects: state.projects.length, missions: state.missions.length, core: validateProjectMissionCore({ projects: state.projects, missions: state.missions }) };
+    return { runtimeVersion: "v010-ia-a-five-distinct-youtube-channels", stateSchemaVersion: STATE_SCHEMA, projects: state.projects.length, missions: state.missions.length, core: validateProjectMissionCore({ projects: state.projects, missions: state.missions }) };
   }
 });
