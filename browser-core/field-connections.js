@@ -31,7 +31,11 @@ const REQUIRED_MANUAL_EVIDENCE_IDS = Object.freeze([
   "oauth_web_client_created",
   "authorized_javascript_origin_registered",
   "public_client_id_configured_in_chrome",
-  "official_youtube_channel_identity_confirmed",
+  "web_radio_louvar_youtube_identity_confirmed",
+  "fale_com_deus_youtube_identity_confirmed",
+  "eu_oro_por_voce_youtube_identity_confirmed",
+  "codigo_da_biblia_youtube_identity_confirmed",
+  "palavra_que_desperta_youtube_identity_confirmed",
   "real_android_device_tested",
   "explicit_field_authorization_recorded"
 ]);
@@ -210,9 +214,8 @@ function expectedChannelPlans() {
     channelId: channel.id,
     channelName: channel.name,
     channelStatus: channel.status,
-    connectionAlias: "youtube-projeto-ia-official",
-    officialYoutubeChannelName: "PROJETO IA",
-    sharedOfficialConnection: true,
+    connectionAlias: `youtube-${channel.id}`,
+    distinctYouTubeChannelRequired: true,
     objective:
       channel.id === "web-radio-louvar"
         ? "daily_short_subscriber_growth"
@@ -232,22 +235,33 @@ function expectedChannelPlans() {
     publishingEnabled: false,
     connectionStatus:
       channel.status === "active"
-        ? "official_connection_available"
+        ? "distinct_channel_connection_pending_confirmation"
         : "channel_configuration_pending"
   }));
 }
 
 function expectedHandoffSteps(fieldConnections) {
-  return [
+  const preparationSteps = [
     { sequence: 1, id: "create_clean_google_cloud_project", screen: "Google Cloud · seleção de projeto", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
     { sequence: 2, id: "enable_youtube_data_api", screen: "Google Cloud · Biblioteca de APIs", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
     { sequence: 3, id: "configure_oauth_brand_and_consent", screen: "Google Auth Platform · marca, público e acesso", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
     { sequence: 4, id: "create_oauth_web_client", screen: "Google Auth Platform · clientes", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
     { sequence: 5, id: "register_exact_javascript_origin", screen: "Cliente OAuth · origem JavaScript autorizada", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
-    { sequence: 6, id: "configure_public_client_id", screen: "PROJETO IA A · Client ID público no Chrome", actionOwner: "anderson_with_guidance", status: "pending_manual", secretInputInChatAllowed: false },
-    { sequence: 7, id: "authorize_and_confirm_official_youtube_channel", screen: "Google OAuth · canal oficial PROJETO IA", actionOwner: "anderson", status: "pending_manual", secretInputInChatAllowed: false },
-    { sequence: 8, id: "validate_on_real_android_device", screen: "Android real · interface, toque e instalação", actionOwner: "anderson_with_guidance", status: "pending_manual", secretInputInChatAllowed: false },
-    { sequence: 9, id: "authorize_controlled_field_test", screen: "PROJETO IA A · autorização final da operação de teste", actionOwner: "anderson", status: "pending_explicit_authorization", secretInputInChatAllowed: false }
+    { sequence: 6, id: "configure_public_client_id", screen: "IA A · Client ID público no Chrome", actionOwner: "anderson_with_guidance", status: "pending_manual", secretInputInChatAllowed: false }
+  ];
+  const channelSteps = PROJECT_CHANNELS.map((channel, index) => ({
+    sequence: index + 7,
+    id: `authorize_and_confirm_${channel.id.replaceAll("-", "_")}`,
+    screen: `Google OAuth · ${channel.name} · link próprio`,
+    actionOwner: "anderson",
+    status: "pending_manual",
+    secretInputInChatAllowed: false
+  }));
+  return [
+    ...preparationSteps,
+    ...channelSteps,
+    { sequence: 12, id: "validate_on_real_android_device", screen: "Android real · interface, toque e instalação", actionOwner: "anderson_with_guidance", status: "pending_manual", secretInputInChatAllowed: false },
+    { sequence: 13, id: "authorize_controlled_field_test", screen: "IA A · autorização final da operação de teste", actionOwner: "anderson", status: "pending_explicit_authorization", secretInputInChatAllowed: false }
   ].map((step) => ({
     ...step,
     connectorRegistryId: fieldConnections.connectorRegistry.id
@@ -300,14 +314,16 @@ function expectedInternalChecks(mission, fieldConnections) {
         (field) => field.value === null && field.valueStored === false
       ) &&
       oauth.tokenStorage.tokensStored === false,
-    projectChannelsShareOfficialConnection: recordsEqual(plan.channels, channelPlans, [
+    projectChannelsHaveDistinctConnections:
+      new Set(plan.channels.map((channel) => channel.connectionAlias)).size ===
+        PROJECT_CHANNELS.length &&
+      recordsEqual(plan.channels, channelPlans, [
       "sequence",
       "channelId",
       "channelName",
       "channelStatus",
       "connectionAlias",
-      "officialYoutubeChannelName",
-      "sharedOfficialConnection",
+      "distinctYouTubeChannelRequired",
       "objective",
       "contentPolicy",
       "monetization",
@@ -423,7 +439,7 @@ function collectFieldConnectionsIssues(mission) {
   if (plan && !oauth) issues.push("field_channel_plan_before_oauth");
   if (
     plan &&
-    (plan.kind !== "shared_official_youtube_connection_plan" ||
+    (plan.kind !== "five_distinct_youtube_channel_connection_plan" ||
       plan.status !== "dry_run_prepared_connections_blocked" ||
       plan.oauthContractId !== oauth?.id ||
       !recordsEqual(plan.channels, expectedPlans, [
@@ -432,8 +448,7 @@ function collectFieldConnectionsIssues(mission) {
         "channelName",
         "channelStatus",
         "connectionAlias",
-        "officialYoutubeChannelName",
-        "sharedOfficialConnection",
+        "distinctYouTubeChannelRequired",
         "objective",
         "contentPolicy",
         "monetization",
@@ -695,20 +710,19 @@ export function prepareTwoChannelConnectionPlan({
   const fieldConnections = requireFieldConnections(mission);
   if (fieldConnections.status !== "oauth_contract_prepared") {
     throw new FieldConnectionsError(
-      "Prepare o canal oficial compartilhado somente depois do contrato OAuth."
+      "Prepare os cinco canais separados somente depois do contrato OAuth."
     );
   }
   const channels = expectedChannelPlans();
   const channelConnectionPlan = Object.freeze({
     schemaVersion: 2,
     id: planId,
-    kind: "shared_official_youtube_connection_plan",
+    kind: "five_distinct_youtube_channel_connection_plan",
     status: "dry_run_prepared_connections_blocked",
     createdAt: now.toISOString(),
     oauthContractId: fieldConnections.oauthContract.id,
-    projectName: "PROJETO IA A",
-    officialYoutubeChannelName: "PROJETO IA",
-    connectionModel: "single_official_connection_shared_by_five_project_channels",
+    projectName: "IA A",
+    connectionModel: "five_distinct_youtube_channels_with_independent_links",
     channels: Object.freeze(channels.map((channel) => Object.freeze(channel))),
     providerSelection: Object.freeze({
       music: "pending_field_decision",
@@ -725,7 +739,7 @@ export function prepareTwoChannelConnectionPlan({
       irreversibleAction: false
     }),
     safety: Object.freeze({
-      officialConnectionSingle: true,
+      distinctChannelConnections: true,
       brainsIndependentPerChannel: true,
       shortsPrimaryContent: false,
       dynamicVideoRequired: true,
@@ -751,7 +765,7 @@ export function consolidateInternalFieldHandoff({
   const fieldConnections = requireFieldConnections(mission);
   if (fieldConnections.status !== "channel_plan_prepared") {
     throw new FieldConnectionsError(
-      "Consolide a passagem manual somente depois do plano do canal oficial compartilhado."
+      "Consolide a passagem manual somente depois do plano dos cinco canais separados."
     );
   }
   const internalChecks = expectedInternalChecks(mission, fieldConnections);
@@ -811,3 +825,4 @@ export function validateFieldCompletionEvidence(evidence) {
     missing: Object.freeze(missing)
   });
 }
+
