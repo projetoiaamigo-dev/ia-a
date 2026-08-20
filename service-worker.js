@@ -1,10 +1,10 @@
-const CACHE_NAME = "ia-a-local-shell-v8";
+const CACHE_NAME = "ia-a-local-shell-v9";
 const SCOPE_URL = self.registration.scope;
 const INDEX_URL = new URL("./index.html", SCOPE_URL).href;
 const SHELL_RESOURCES = [
   "./",
   "./index.html",
-  "./styles.css?v=12-compact-mobile",
+  "./styles.css?v=13-folder-dashboard",
   "./app.js?v=11",
   "./browser-runtime.js?v=11",
   "./field-oauth.js?v=14-five-distinct",
