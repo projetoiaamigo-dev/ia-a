@@ -5,6 +5,7 @@ const listNode = document.querySelector("#field-oauth-list");
 
 const YOUTUBE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
 const CLIENT_ID_KEY = "iaa.google.oauth.client_id";
+const DEFAULT_CLIENT_ID = "686007116621-9ubhrl0hc03bgku5k5il3orllibet892c.apps.googleusercontent.com";
 const CONNECTIONS_KEY = "iaa.google.youtube.connections.v1";
 
 const slots = [
@@ -35,7 +36,8 @@ function saveConnections(value) {
 }
 
 function getClientId() {
-  return (localStorage.getItem(CLIENT_ID_KEY) || "").trim();
+  const saved = (localStorage.getItem(CLIENT_ID_KEY) || "").trim();
+  return saved || DEFAULT_CLIENT_ID;
 }
 
 function saveClientId(value) {
@@ -66,7 +68,7 @@ async function fetchMyChannel(accessToken) {
 
 function ensureTokenClient(slot) {
   const clientId = getClientId();
-  if (!clientId) throw new Error("Informe o Client ID do Google uma única vez abaixo.");
+  if (!clientId) throw new Error("Client ID do Google não configurado.");
   if (!window.google?.accounts?.oauth2) throw new Error("Google Identity Services ainda não carregou. Atualize a página.");
 
   activeSlot = slot;
@@ -136,27 +138,19 @@ function renderClientIdSetup() {
   const title = document.createElement("h3");
   title.textContent = "Configuração do Chrome";
   const copy = document.createElement("p");
-  copy.textContent = "Cole o Client ID do cliente Web do Google. Não use Client Secret.";
+  copy.textContent = "Client ID público do Google já configurado. Client Secret não é usado.";
   const input = document.createElement("input");
   input.type = "text";
   input.inputMode = "text";
   input.autocomplete = "off";
-  input.placeholder = "...apps.googleusercontent.com";
   input.value = getClientId();
+  input.readOnly = true;
   input.setAttribute("aria-label", "Google OAuth Client ID");
   const button = document.createElement("button");
   button.type = "button";
   button.className = "secondary";
-  button.textContent = "Salvar Client ID neste Chrome";
-  button.addEventListener("click", () => {
-    try {
-      saveClientId(input.value);
-      setMessage("Client ID salvo somente neste navegador. Nenhum Client Secret é necessário.", "success");
-      render();
-    } catch (error) {
-      setMessage(error.message, "error");
-    }
-  });
+  button.textContent = "Client ID configurado";
+  button.disabled = true;
   wrap.append(title, copy, input, button);
   return wrap;
 }
@@ -211,12 +205,10 @@ function renderConnection(def, connections) {
 
 function render() {
   const connections = loadConnections();
-  redirectNode.textContent = `Chrome HTTPS: ${location.origin} · usar esta origem em “Origens JavaScript autorizadas” no Google.`;
+  redirectNode.textContent = `Chrome HTTPS: ${location.origin} · origem autorizada no Google.`;
   const nodes = [renderClientIdSetup(), ...slots.map((slot) => renderConnection(slot, connections))];
   listNode.replaceChildren(...nodes);
-  if (!getClientId() && !statusNode.textContent) {
-    setMessage("Modo Chrome ativo. Falta apenas o Client ID público do Google; Client Secret não é usado.");
-  } else if (getClientId() && !statusNode.textContent) {
+  if (!statusNode.textContent) {
     setMessage("Modo Chrome pronto para autorização Google/YouTube em somente leitura.", "success");
   }
 }
