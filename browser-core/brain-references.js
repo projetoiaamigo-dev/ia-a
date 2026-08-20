@@ -1,7 +1,9 @@
 export const REFERENCE_CLASSIFICATIONS = Object.freeze({
   verifiedFact: "verified_public_fact",
   reconstructionCriterion: "reconstruction_criterion",
-  unvalidatedHypothesis: "unvalidated_hypothesis"
+  unvalidatedHypothesis: "unvalidated_hypothesis",
+  ownerSpecification: "owner_specification",
+  ownerDefinedFact: "owner_defined_fact"
 });
 
 const VERIFIED_AT = "2026-08-11";
