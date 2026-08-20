@@ -1,16 +1,18 @@
-# PROJETO IA A — Chrome independente
+# IA A — Chrome independente
 
-Aplicação web estática oficial do **PROJETO IA A** para uso no Chrome em Android.
+Aplicação web estática oficial do projeto **IA A** para uso no Chrome em Android.
 
 ## Arquitetura do YouTube
 
-O projeto usa **uma única conexão OAuth** com o canal oficial do YouTube **PROJETO IA**. Essa conexão atende os cinco canais internos do projeto:
+A IA A possui **cinco canais distintos no YouTube**. Cada canal tem sua própria conexão OAuth, identidade, ID e link:
 
 1. Web Rádio Louvar — em atividade;
 2. Fale com Deus — em atividade;
-3. Eu Oro por Você — canal existente, em configuração;
-4. Código da Bíblia — canal existente, em configuração;
-5. Palavra que Desperta — canal existente, em configuração.
+3. Eu Oro por Você — canal existente, em configuração e preparação para monetização;
+4. Código da Bíblia — canal existente, em configuração e preparação para monetização;
+5. Palavra que Desperta — canal existente, em configuração e preparação para monetização.
+
+Uma conexão não é compartilhada entre canais. O sistema impede a confirmação do mesmo ID/link do YouTube em dois canais diferentes.
 
 Cada canal possui cérebro próprio. Dados, padrões e aprendizados não são transferidos automaticamente de um canal para outro.
 
